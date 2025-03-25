@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import folium
-from streamlit_folium import folium_static
+from streamlit_folium import st_folium
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
@@ -189,7 +189,7 @@ with col2:
             warning_threshold, danger_threshold,
             selected_forest
         )
-        folium_static(map_fig, width=600, height=400)
+        st_folium(map_fig, width=600, height=400)
     else:
         st.info("Map data unavailable. Please refresh.")
 
