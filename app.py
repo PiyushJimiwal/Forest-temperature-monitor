@@ -4,11 +4,13 @@ import numpy as np
 import folium
 from streamlit_folium import folium_static
 import plotly.express as px
+import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import time
+import base64
 
 from utils.data_fetcher import fetch_weather_data, get_forest_locations
-from utils.visualization import create_temperature_map, plot_temperature_history, create_temperature_gauge
+from utils.visualization import create_temperature_map, plot_temperature_history, create_temperature_gauge, add_animated_icon
 
 # Set page configuration
 st.set_page_config(
@@ -18,8 +20,25 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Application title
-st.title("🌲 Forest Temperature Monitoring System")
+# Application title with animated header
+st.markdown("""
+<style>
+@keyframes color-change {
+    0% { color: #2E8B57; }  /* Forest green */
+    50% { color: #FF4500; } /* Orange red */
+    100% { color: #2E8B57; }
+}
+
+.animated-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    animation: color-change 5s infinite;
+    padding: 0.5rem 0;
+}
+</style>
+<div class="animated-title">🌲 Forest Temperature Monitoring System</div>
+""", unsafe_allow_html=True)
+
 st.markdown("Monitor forest temperatures to prevent fires and protect wildlife")
 
 # Sidebar for controls
@@ -142,11 +161,19 @@ with col1:
         with metrics_col3:
             st.metric("Wind Speed", f"{data['wind_speed']} km/h")
             
-        # Alert system
+        # Alert system with animated icons
         if data['current_temp'] >= danger_threshold:
-            st.error(f"⚠️ DANGER: Temperature exceeds critical threshold of {danger_threshold}°C. Fire risk is VERY HIGH!")
+            alert_col1, alert_col2 = st.columns([1, 3])
+            with alert_col1:
+                st.markdown(add_animated_icon(data['current_temp']), unsafe_allow_html=True)
+            with alert_col2:
+                st.error(f"DANGER: Temperature exceeds critical threshold of {danger_threshold}°C. Fire risk is VERY HIGH!")
         elif data['current_temp'] >= warning_threshold:
-            st.warning(f"⚠️ WARNING: Temperature exceeds warning threshold of {warning_threshold}°C. Increased fire risk!")
+            alert_col1, alert_col2 = st.columns([1, 3])
+            with alert_col1:
+                st.markdown(add_animated_icon(data['current_temp']), unsafe_allow_html=True)
+            with alert_col2:
+                st.warning(f"WARNING: Temperature exceeds warning threshold of {warning_threshold}°C. Increased fire risk!")
     else:
         st.info("No temperature data available. Please refresh.")
 
@@ -166,8 +193,21 @@ with col2:
     else:
         st.info("Map data unavailable. Please refresh.")
 
-# Historical data section
-st.subheader("Temperature History")
+# Historical data section with animation
+st.markdown("""
+<style>
+@keyframes slide-in {
+    0% { transform: translateX(-100%); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+}
+.animated-header {
+    animation: slide-in 1.5s ease-out;
+}
+</style>
+<div class="animated-header">
+    <h3>Temperature History</h3>
+</div>
+""", unsafe_allow_html=True)
 
 if selected_forest in st.session_state.temperature_history and st.session_state.temperature_history[selected_forest]:
     history_data = st.session_state.temperature_history[selected_forest]
@@ -175,12 +215,46 @@ if selected_forest in st.session_state.temperature_history and st.session_state.
     # Convert to dataframe for plotting
     history_df = pd.DataFrame(history_data)
     
-    # Plot temperature history
+    # Plot temperature history with animation
     fig = plot_temperature_history(
         history_df, 
         warning_threshold, 
         danger_threshold
     )
+    
+    # Add frame-by-frame animation to the plot
+    frames = []
+    for i in range(1, len(history_df) + 1):
+        subset = history_df.iloc[:i]
+        if not subset.empty:
+            frame_fig = go.Frame(
+                data=[go.Scatter(
+                    x=subset['timestamp'], 
+                    y=subset['temperature'],
+                    mode='lines+markers',
+                    line=dict(color='#1f77b4', width=3),
+                    marker=dict(size=6)
+                )],
+                name=f"frame{i}"
+            )
+            frames.append(frame_fig)
+    
+    if frames:
+        fig.frames = frames
+        fig.update_layout(
+            updatemenus=[{
+                'type': 'buttons',
+                'showactive': False,
+                'buttons': [{
+                    'label': 'Play',
+                    'method': 'animate',
+                    'args': [None, {'frame': {'duration': 100, 'redraw': True}, 'fromcurrent': True}]
+                }],
+                'x': 0.1,
+                'y': 0
+            }]
+        )
+    
     st.plotly_chart(fig, use_container_width=True)
     
     # Show raw data table if requested
@@ -191,10 +265,69 @@ if selected_forest in st.session_state.temperature_history and st.session_state.
 else:
     st.info("No historical data available yet. Data will appear after multiple refreshes.")
 
-# Footer
+# Animated Footer
 st.markdown("---")
-st.markdown(
-    "**Forest Temperature Monitoring System** - "
-    f"Last updated: {st.session_state.last_refresh.strftime('%Y-%m-%d %H:%M:%S')} - "
-    f"Next update in: {max(0, refresh_interval - time_diff):.1f} minutes"
-)
+
+# Calculate percentage of time elapsed until next update
+time_remaining = max(0, refresh_interval - time_diff)
+progress_percent = 100 - (time_remaining / refresh_interval * 100)
+
+# Create an animated progress bar for the time until next update
+footer_html = f"""
+<style>
+@keyframes pulse {{
+    0% {{ opacity: 0.7; }}
+    50% {{ opacity: 1; }}
+    100% {{ opacity: 0.7; }}
+}}
+
+.footer-container {{
+    margin-top: 20px;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+}}
+
+.update-progress {{
+    height: 5px;
+    background-color: #dcdcdc;
+    border-radius: 5px;
+    margin-top: 10px;
+    position: relative;
+}}
+
+.update-progress-bar {{
+    height: 100%;
+    width: {progress_percent}%;
+    background-color: #2E8B57;
+    border-radius: 5px;
+    animation: pulse 2s infinite;
+}}
+
+.footer-text {{
+    margin-bottom: 5px;
+    font-weight: bold;
+}}
+
+.time-info {{
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #666;
+}}
+</style>
+
+<div class="footer-container">
+    <div class="footer-text">Forest Temperature Monitoring System</div>
+    <div>Last updated: {st.session_state.last_refresh.strftime('%Y-%m-%d %H:%M:%S')} - Next update in: {time_remaining:.1f} minutes</div>
+    <div class="update-progress">
+        <div class="update-progress-bar"></div>
+    </div>
+    <div class="time-info">
+        <span>Just updated</span>
+        <span>Next update</span>
+    </div>
+</div>
+"""
+
+st.markdown(footer_html, unsafe_allow_html=True)

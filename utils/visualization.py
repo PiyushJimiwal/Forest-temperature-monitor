@@ -1,9 +1,12 @@
 import folium
-from folium.plugins import HeatMap
+from folium.plugins import HeatMap, MeasureControl, Fullscreen, TimestampedGeoJson
 import plotly.express as px
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import pandas as pd
 import numpy as np
+import base64
+from datetime import datetime, timedelta
 
 def create_temperature_map(lat, lon, temperature, warning_threshold, danger_threshold, location_name):
     """
@@ -171,32 +174,155 @@ def create_temperature_gauge(temperature, warning_threshold, danger_threshold):
     # Determine the maximum value for the gauge (at least 10 degrees above the current temperature)
     max_temp = max(50, temperature + 10, danger_threshold + 5)
     
-    # Create the gauge figure
-    fig = go.Figure(go.Indicator(
-        mode="gauge+number",
-        value=temperature,
-        domain={'x': [0, 1], 'y': [0, 1]},
-        title={'text': "Current Temperature (°C)"},
-        gauge={
-            'axis': {'range': [0, max_temp]},
-            'bar': {'color': "darkblue"},
-            'steps': [
-                {'range': [0, warning_threshold], 'color': "lightgreen"},
-                {'range': [warning_threshold, danger_threshold], 'color': "orange"},
-                {'range': [danger_threshold, max_temp], 'color': "red"}
-            ],
-            'threshold': {
-                'line': {'color': "red", 'width': 4},
-                'thickness': 0.75,
-                'value': temperature
-            }
-        }
-    ))
+    # Create the gauge figure with animation
+    fig = go.Figure()
     
-    # Update layout
+    # Add animated trace that goes from 0 to the actual temperature
+    for i in range(0, int(temperature) + 1, max(1, int(temperature // 10))):
+        fig.add_trace(
+            go.Indicator(
+                mode="gauge+number",
+                value=i,
+                domain={'x': [0, 1], 'y': [0, 1]},
+                title={'text': "Current Temperature (°C)"},
+                gauge={
+                    'axis': {'range': [0, max_temp]},
+                    'bar': {'color': "darkblue"},
+                    'steps': [
+                        {'range': [0, warning_threshold], 'color': "lightgreen"},
+                        {'range': [warning_threshold, danger_threshold], 'color': "orange"},
+                        {'range': [danger_threshold, max_temp], 'color': "red"}
+                    ],
+                    'threshold': {
+                        'line': {'color': "red", 'width': 4},
+                        'thickness': 0.75,
+                        'value': i
+                    }
+                },
+                visible=False
+            )
+        )
+    
+    # Add the final gauge with the actual temperature
+    fig.add_trace(
+        go.Indicator(
+            mode="gauge+number",
+            value=temperature,
+            domain={'x': [0, 1], 'y': [0, 1]},
+            title={'text': "Current Temperature (°C)"},
+            gauge={
+                'axis': {'range': [0, max_temp]},
+                'bar': {'color': "darkblue"},
+                'steps': [
+                    {'range': [0, warning_threshold], 'color': "lightgreen"},
+                    {'range': [warning_threshold, danger_threshold], 'color': "orange"},
+                    {'range': [danger_threshold, max_temp], 'color': "red"}
+                ],
+                'threshold': {
+                    'line': {'color': "red", 'width': 4},
+                    'thickness': 0.75,
+                    'value': temperature
+                }
+            }
+        )
+    )
+    
+    # Create frames for animation
+    frames = []
+    for i in range(len(fig.data)):
+        frame_data = []
+        for j in range(len(fig.data)):
+            visible = True if j == i else False
+            frame_data.append(go.Indicator(visible=visible))
+        frames.append(go.Frame(data=frame_data, name=str(i)))
+    
+    fig.frames = frames
+    
+    # Add animation buttons
     fig.update_layout(
-        height=250,
-        margin=dict(l=10, r=10, t=50, b=10),
+        updatemenus=[{
+            'type': 'buttons',
+            'showactive': False,
+            'buttons': [{
+                'label': 'Play',
+                'method': 'animate',
+                'args': [None, {'frame': {'duration': 50, 'redraw': True}, 'fromcurrent': True}]
+            }],
+            'x': 0.1,
+            'y': 0,
+        }],
+        height=300,
+        margin=dict(l=10, r=10, t=50, b=50),
     )
     
     return fig
+
+def add_animated_icon(temperature):
+    """
+    Creates an animated icon based on the temperature level.
+    
+    Args:
+        temperature (float): Current temperature value
+        
+    Returns:
+        str: HTML for the animated icon
+    """
+    # Generate a simple CSS animation based on temperature
+    # Higher temperature = faster animation
+    animation_speed = max(1, min(5, temperature / 10))  # Scale between 1-5 seconds
+    
+    if temperature >= 35:  # High temperature - fire icon
+        icon_color = "red"
+        icon_name = "fire"
+        animation = f"""
+        @keyframes pulse-{icon_name} {{
+            0% {{ transform: scale(1); opacity: 0.8; }}
+            50% {{ transform: scale(1.2); opacity: 1; }}
+            100% {{ transform: scale(1); opacity: 0.8; }}
+        }}
+        """
+        animation_style = f"animation: pulse-{icon_name} {animation_speed}s infinite;"
+    
+    elif temperature >= 25:  # Medium temperature - thermometer icon
+        icon_color = "orange"
+        icon_name = "thermometer-three-quarters"
+        animation = f"""
+        @keyframes shake-{icon_name} {{
+            0% {{ transform: rotate(0deg); }}
+            25% {{ transform: rotate(5deg); }}
+            50% {{ transform: rotate(0deg); }}
+            75% {{ transform: rotate(-5deg); }}
+            100% {{ transform: rotate(0deg); }}
+        }}
+        """
+        animation_style = f"animation: shake-{icon_name} {animation_speed}s infinite;"
+    
+    else:  # Low temperature - normal thermometer
+        icon_color = "green"
+        icon_name = "thermometer-quarter"
+        animation = f"""
+        @keyframes fade-{icon_name} {{
+            0% {{ opacity: 0.7; }}
+            50% {{ opacity: 1; }}
+            100% {{ opacity: 0.7; }}
+        }}
+        """
+        animation_style = f"animation: fade-{icon_name} {animation_speed*2}s infinite;"
+    
+    # Generate the HTML with embedded CSS animation
+    html = f"""
+    <style>
+        {animation}
+        .animated-icon-{icon_name} {{
+            display: inline-block;
+            {animation_style}
+            color: {icon_color};
+            font-size: 3rem;
+        }}
+    </style>
+    <div class="animated-icon-{icon_name}">
+        <i class="fas fa-{icon_name}"></i>
+    </div>
+    """
+    
+    return html
