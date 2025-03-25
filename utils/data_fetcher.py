@@ -18,7 +18,13 @@ def get_forest_locations():
         "Sherwood Forest, UK": (53.2054, -1.0661),
         "Białowieża Forest, Poland": (52.7333, 23.8667),
         "Sundarbans Forest, Bangladesh": (21.9497, 89.1833),
-        "Kakamega Forest, Kenya": (0.2799, 34.8875)
+        "Kakamega Forest, Kenya": (0.2799, 34.8875),
+        # Indian Forests
+        "Jim Corbett National Park, India": (29.5300, 78.7742),
+        "Nagarhole National Park, India": (12.0438, 76.1440),
+        "Bandipur National Park, India": (11.6720, 76.6350),
+        "Kaziranga National Park, India": (26.5789, 93.1700),
+        "Sundarbans, India": (21.9497, 88.9000)
     }
 
 def fetch_weather_data(lat, lon):
