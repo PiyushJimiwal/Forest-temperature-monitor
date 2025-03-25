@@ -47,7 +47,7 @@ cd Forest-temperature-monitor
 
 2. Install the required packages:
 ```bash
-pip install -r requirements.txt
+pip install -r package_list.txt
 ```
 
 3. Run the application:
