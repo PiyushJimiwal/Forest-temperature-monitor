@@ -41,8 +41,8 @@ This application is built with:
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/yourusername/forest-temperature-monitor.git
-cd forest-temperature-monitor
+git clone https://github.com/PiyushJimiwal/Forest-temperature-monitor.git
+cd Forest-temperature-monitor
 ```
 
 2. Install the required packages:
@@ -61,6 +61,38 @@ streamlit run app.py
 - Adjust the temperature thresholds using the sliders
 - View historical data using the animated timeline
 - Set custom refresh intervals to control data update frequency
+
+## Deployment Options
+
+### Streamlit Cloud (Recommended)
+
+1. Go to [Streamlit Cloud](https://streamlit.io/cloud)
+2. Sign in with your GitHub account
+3. Select this repository
+4. Set the main file path to `app.py`
+5. Click "Deploy"
+
+### Heroku
+
+1. Create a Heroku account and install the Heroku CLI
+2. Login to Heroku and create a new app:
+   ```bash
+   heroku login
+   heroku create your-app-name
+   ```
+3. Push to Heroku:
+   ```bash
+   git push heroku main
+   ```
+
+### GitHub Actions
+
+This repository includes a GitHub Actions workflow that can be configured to deploy to various platforms.
+To use it:
+
+1. Go to your repository Settings → Secrets
+2. Add the necessary secrets for your deployment platform
+3. Uncomment and customize the deployment section in `.github/workflows/deploy.yml`
 
 ## License
 
