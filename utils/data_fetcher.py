@@ -9,17 +9,7 @@ def get_forest_locations():
     Returns a dictionary of forest locations with their coordinates.
     """
     return {
-        "Yosemite National Forest": (37.8651, -119.5383),
-        "Sequoia National Forest": (36.4864, -118.5658),
-        "Redwood National Forest": (41.2132, -124.0046),
-        "Black Forest, Germany": (48.2647, 8.2735),
-        "Amazon Rainforest, Brazil": (-3.4653, -62.2159),
-        "Daintree Rainforest, Australia": (-16.2500, 145.2500),
-        "Sherwood Forest, UK": (53.2054, -1.0661),
-        "Białowieża Forest, Poland": (52.7333, 23.8667),
-        "Sundarbans Forest, Bangladesh": (21.9497, 89.1833),
-        "Kakamega Forest, Kenya": (0.2799, 34.8875),
-        # Indian Forests
+        # Focus on Indian Forests as per project requirements
         "Jim Corbett National Park, India": (29.5300, 78.7742),
         "Nagarhole National Park, India": (12.0438, 76.1440),
         "Bandipur National Park, India": (11.6720, 76.6350),
