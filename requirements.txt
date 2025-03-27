@@ -13,3 +13,4 @@ pandas
 plotly
 streamlit
 streamlit-folium
+streamlit-folium==0.15.0
