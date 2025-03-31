@@ -1,0 +1,7 @@
+# Core packages - NO folium dependencies!
+numpy==1.24.3
+pandas==2.0.3
+requests==2.31.0
+streamlit==1.32.0
+plotly==5.18.0
+trafilatura==1.6.0
