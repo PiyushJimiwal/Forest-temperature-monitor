@@ -43,3 +43,9 @@ plotly
 requests
 streamlit
 trafilatura
+numpy
+pandas
+plotly
+requests
+streamlit
+trafilatura
