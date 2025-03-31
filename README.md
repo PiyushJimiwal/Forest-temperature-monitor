@@ -64,20 +64,6 @@ streamlit run app.py
 
 ## Deployment Options
 
-### Render.com (Recommended)
-
-This repository is configured for easy deployment on Render.com using the `render.yaml` configuration file.
-
-1. Fork or clone this repository to your GitHub account
-2. Create a new Web Service on [Render.com](https://render.com/)
-3. Connect your GitHub repository
-4. Use these settings:
-   - **Environment**: Python
-   - **Build Command**: `bash render_build.sh`
-   - **Start Command**: `streamlit run app.py --server.port=$PORT --server.address=0.0.0.0`
-
-The application will automatically deploy using the settings in the `render.yaml` file. For troubleshooting, see the `RENDER_DEPLOYMENT.md` file.
-
 ### Streamlit Cloud
 
 1. Go to [Streamlit Cloud](https://streamlit.io/cloud)
