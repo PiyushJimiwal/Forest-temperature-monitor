@@ -19,7 +19,7 @@ Follow these steps to deploy your Forest Temperature Monitoring System on Render
 4. **Branch**: `main`
 5. **Build Command**: 
    ```
-   bash install_dependencies.sh
+   bash render_build.sh
    ```
 6. **Start Command**: 
    ```
@@ -30,7 +30,10 @@ Follow these steps to deploy your Forest Temperature Monitoring System on Render
 ## Step 4: Advanced Settings
 1. Click on "Advanced" settings
 2. Set **Health Check Path** to `/`
-3. Leave everything else as default
+3. Under **Environment Variables**, add:
+   - Key: `PYTHON_VERSION` 
+   - Value: `3.11.0`
+4. Leave everything else as default
 
 ## Step 5: Create and Deploy
 1. Click "Create Web Service"
@@ -44,8 +47,16 @@ Follow these steps to deploy your Forest Temperature Monitoring System on Render
 If you encounter any errors during deployment:
 
 1. Check the build logs on Render for any dependency conflicts
-2. Make sure the correct requirements file is being used (`requirements.txt.github`)
-3. Verify that your application runs correctly locally
+2. If you see streamlit-folium errors, ensure you're using the `render_build.sh` script which handles installation in the correct order
+3. Try using the automatic deployment from the GitHub repository which uses the render.yaml configuration
+
+## IMPORTANT: Solving Dependency Issues
+We've created a special installation script (`render_build.sh`) that:
+1. Installs each package separately in a specific order
+2. Handles the streamlit-folium conflict by installing it with `--no-deps`
+3. Then manually installs its dependencies afterward
+
+This approach resolves the common "Cannot import name 'generate_from' from 'folium.map'" error that often occurs with streamlit-folium.
 
 ## Important Notes
 - The free tier of Render will spin down with inactivity, which can cause a delay when someone visits your site after a period of inactivity
