@@ -19,7 +19,7 @@ Follow these steps to deploy your Forest Temperature Monitoring System on Render
 4. **Branch**: `main`
 5. **Build Command**: 
    ```
-   pip install -r requirements.txt.github
+   bash install_dependencies.sh
    ```
 6. **Start Command**: 
    ```
