@@ -64,7 +64,21 @@ streamlit run app.py
 
 ## Deployment Options
 
-### Streamlit Cloud (Recommended)
+### Render.com (Recommended)
+
+This repository is configured for easy deployment on Render.com using the `render.yaml` configuration file.
+
+1. Fork or clone this repository to your GitHub account
+2. Create a new Web Service on [Render.com](https://render.com/)
+3. Connect your GitHub repository
+4. Use these settings:
+   - **Environment**: Python
+   - **Build Command**: `bash render_build.sh`
+   - **Start Command**: `streamlit run app.py --server.port=$PORT --server.address=0.0.0.0`
+
+The application will automatically deploy using the settings in the `render.yaml` file. For troubleshooting, see the `RENDER_DEPLOYMENT.md` file.
+
+### Streamlit Cloud
 
 1. Go to [Streamlit Cloud](https://streamlit.io/cloud)
 2. Sign in with your GitHub account
@@ -72,27 +86,13 @@ streamlit run app.py
 4. Set the main file path to `app.py`
 5. Click "Deploy"
 
-### Heroku
+### GitHub Pages
 
-1. Create a Heroku account and install the Heroku CLI
-2. Login to Heroku and create a new app:
-   ```bash
-   heroku login
-   heroku create your-app-name
-   ```
-3. Push to Heroku:
-   ```bash
-   git push heroku main
-   ```
+This repository can also be deployed to GitHub Pages:
 
-### GitHub Actions
-
-This repository includes a GitHub Actions workflow that can be configured to deploy to various platforms.
-To use it:
-
-1. Go to your repository Settings → Secrets
-2. Add the necessary secrets for your deployment platform
-3. Uncomment and customize the deployment section in `.github/workflows/deploy.yml`
+1. Go to your repository Settings → Pages
+2. Set the source to GitHub Actions
+3. The included workflow will build and deploy the static site
 
 ## License
 

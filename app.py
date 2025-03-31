@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import folium
-from streamlit_folium import st_folium
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
@@ -10,7 +8,7 @@ import time
 import base64
 
 from utils.data_fetcher import fetch_weather_data, get_forest_locations
-from utils.visualization import create_temperature_map, plot_temperature_history, create_temperature_gauge, add_animated_icon
+from utils.visualization_streamlit import create_plotly_map, plot_temperature_history, create_temperature_gauge, add_animated_icon
 
 # Set page configuration
 st.set_page_config(
@@ -19,6 +17,11 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Add Font Awesome to enable icons
+st.markdown("""
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+""", unsafe_allow_html=True)
 
 # Application title with animated header
 st.markdown("""
@@ -184,12 +187,12 @@ with col2:
         # Create and display map
         lat, lon = forest_locations[selected_forest]
         temp_data = st.session_state.current_temp_data['current_temp']
-        map_fig = create_temperature_map(
+        map_fig = create_plotly_map(
             lat, lon, temp_data, 
             warning_threshold, danger_threshold,
             selected_forest
         )
-        st_folium(map_fig, width=600, height=400)
+        st.plotly_chart(map_fig, use_container_width=True)
     else:
         st.info("Map data unavailable. Please refresh.")
 
@@ -264,6 +267,48 @@ if selected_forest in st.session_state.temperature_history and st.session_state.
         st.dataframe(display_df, use_container_width=True)
 else:
     st.info("No historical data available yet. Data will appear after multiple refreshes.")
+
+# FAQ Section
+st.markdown("---")
+st.subheader("Frequently Asked Questions")
+
+with st.expander("What is the purpose of this monitoring system?"):
+    st.write("""
+    The Forest Temperature Monitoring System tracks temperature changes in key Indian forest areas to:
+    - Detect potential fire risks by monitoring temperature spikes
+    - Provide early warnings to forest management authorities
+    - Track historical temperature patterns for forest health assessment
+    - Support conservation efforts for forest wildlife and ecosystems
+    """)
+
+with st.expander("How does the temperature alert system work?"):
+    st.write("""
+    The system uses two threshold levels:
+    - **Warning level** (customizable, default 30°C): Indicates elevated temperature that requires attention
+    - **Danger level** (customizable, default 35°C): Indicates critical temperature with high fire risk
+    
+    When temperatures exceed these thresholds, the system displays visual alerts with animated icons and color-coded warnings.
+    """)
+
+with st.expander("Which Indian forests are monitored?"):
+    st.write("""
+    The system currently monitors five key Indian forest regions:
+    1. **Jim Corbett National Park** - Uttarakhand, famous for tigers and elephants
+    2. **Nagarhole National Park** - Karnataka, part of the Nilgiri Biosphere Reserve
+    3. **Bandipur National Park** - Karnataka, known for its dry deciduous forests
+    4. **Kaziranga National Park** - Assam, home to two-thirds of the world's great one-horned rhinoceroses
+    5. **Sundarbans** - West Bengal, the largest mangrove forest in the world
+    """)
+
+with st.expander("How accurate is the temperature data?"):
+    st.write("""
+    The temperature data comes from deterministic algorithms that simulate real-world patterns based on:
+    - Geographic location (latitude/longitude)
+    - Time of day temperature cycles
+    - Historical weather patterns for the region
+    
+    This approach ensures consistent and realistic temperature patterns for demonstration purposes.
+    """)
 
 # Animated Footer
 st.markdown("---")
